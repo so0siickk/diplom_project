@@ -27,6 +27,7 @@ export interface Course {
   owner: string
   created_at: string
   modules: Module[]
+  is_enrolled: boolean
 }
 
 export interface RecommendationItem {

@@ -51,3 +51,27 @@ class Lesson(models.Model):
         ordering = ['order']
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
+
+
+class Enrollment(models.Model):
+    """Records that a user is enrolled in a course."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='enrollments',
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='enrollments',
+    )
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('user', 'course')]
+        ordering = ['-enrolled_at']
+        verbose_name = 'Enrollment'
+        verbose_name_plural = 'Enrollments'
+
+    def __str__(self) -> str:
+        return f'{self.user.username} -> {self.course.title}'

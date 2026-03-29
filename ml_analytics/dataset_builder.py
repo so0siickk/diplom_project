@@ -134,6 +134,9 @@ def build_dataset() -> pd.DataFrame:
         module_order = lesson_meta.get('module_order', 0)
         lesson_position_ratio = lesson_meta.get('lesson_position_ratio', 0.0)
 
+        raw_quiz_score = rec['quiz_score']
+        quiz_taken = 1 if raw_quiz_score is not None else 0
+
         rows.append({
             # Мета (не используется как признак, нужна для отладки)
             'user_id': uid,
@@ -152,7 +155,8 @@ def build_dataset() -> pd.DataFrame:
             # Текущий урок
             'time_spent_seconds': rec['time_spent_seconds'],
             'attempt_count': rec['attempt_count'],
-            'quiz_score': rec['quiz_score'] if rec['quiz_score'] is not None else 0.0,
+            'quiz_taken': quiz_taken,
+            'quiz_score': raw_quiz_score if raw_quiz_score is not None else 0.0,
             # Цель
             'target': int(rec['is_completed']),
         })
@@ -182,7 +186,8 @@ FEATURE_COLS = [
     'prev_lessons_done',
     'time_spent_seconds',
     'attempt_count',
-    'quiz_score',
+    'quiz_taken',    # NEW: 1 = quiz was attempted, 0 = never opened
+    'quiz_score',    # 0.0 when quiz_taken=0 (not taken)
 ]
 TARGET_COL = 'target'
 

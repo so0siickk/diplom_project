@@ -41,7 +41,8 @@ FEATURE_COLS: list[str] = [
     'prev_lessons_done',
     'time_spent_seconds',
     'attempt_count',
-    'quiz_score',
+    'quiz_taken',    # 1 = quiz was attempted, 0 = never opened
+    'quiz_score',    # 0.0 when quiz_taken=0
 ]
 
 # ---------------------------------------------------------------------------
@@ -165,10 +166,12 @@ def build_feature_vector(user: 'User', lesson: 'Lesson') -> np.ndarray:
         current = UserLessonProgress.objects.get(user=user, lesson=lesson)
         time_spent = current.time_spent_seconds
         attempt_count = current.attempt_count
+        quiz_taken = 1.0 if current.quiz_score is not None else 0.0
         quiz_score = current.quiz_score if current.quiz_score is not None else 0.0
     except UserLessonProgress.DoesNotExist:
         time_spent = 0
         attempt_count = 1
+        quiz_taken = 0.0
         quiz_score = 0.0
 
     vector = np.array([
@@ -182,6 +185,7 @@ def build_feature_vector(user: 'User', lesson: 'Lesson') -> np.ndarray:
         float(prev_lessons_done),
         float(time_spent),
         float(attempt_count),
+        quiz_taken,
         quiz_score,
     ], dtype=np.float64)
 

@@ -25,12 +25,13 @@ from datetime import datetime, timezone
 
 import joblib
 import numpy as np
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     roc_auc_score,
 )
+from sklearn.inspection import permutation_importance
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -51,19 +52,22 @@ AI_MODULE_DIR = os.path.join(_ROOT, 'ai_module')
 MODEL_PATH = os.path.join(AI_MODULE_DIR, 'model.pkl')
 META_PATH = os.path.join(AI_MODULE_DIR, 'meta.json')
 
+# HistGradientBoostingClassifier param grid
+# Note: StandardScaler is kept in the pipeline for consistency but HGBC
+# is scale-invariant. class_weight='balanced' handles class imbalance natively.
 PARAM_GRID = {
-    'clf__n_estimators': [100, 200],
-    'clf__max_depth': [3, 5],
-    'clf__learning_rate': [0.05, 0.1],
-    'clf__subsample': [0.8, 1.0],
+    'clf__max_iter':       [200, 400],
+    'clf__max_depth':      [3, 5],
+    'clf__learning_rate':  [0.05, 0.1],
+    'clf__min_samples_leaf': [10, 20],
 }
 
 FAST_PARAMS = {
-    'n_estimators': 200,
+    'max_iter': 300,
     'max_depth': 4,
     'learning_rate': 0.08,
-    'subsample': 0.85,
-    'min_samples_leaf': 5,
+    'min_samples_leaf': 15,
+    'class_weight': 'balanced',
     'random_state': 42,
 }
 
@@ -72,7 +76,7 @@ def _build_pipeline(params: dict | None = None) -> Pipeline:
     clf_params = params or FAST_PARAMS
     return Pipeline([
         ('scaler', StandardScaler()),
-        ('clf', GradientBoostingClassifier(**clf_params)),
+        ('clf', HistGradientBoostingClassifier(**clf_params)),
     ])
 
 
@@ -105,6 +109,8 @@ def train(use_grid: bool = True, test_size: float = 0.20) -> dict:
     if use_grid and len(X_train) >= 50:
         print('GridSearchCV (3-fold, scoring=roc_auc) ...')
         pipe = _build_pipeline()
+        # class_weight is fixed to 'balanced' for all grid candidates
+        pipe.set_params(clf__class_weight='balanced')
         gs = GridSearchCV(
             pipe,
             PARAM_GRID,
@@ -151,18 +157,22 @@ def train(use_grid: bool = True, test_size: float = 0.20) -> dict:
     print()
     print(classification_report(y_test, y_pred, target_names=['Не завершил', 'Завершил']))
 
-    # --- Feature importance ---
-    clf = best_model.named_steps['clf']
+    # --- Feature importance (permutation-based, unbiased for HGBC) ---
+    print('Computing permutation importances (n_repeats=10)...')
+    perm = permutation_importance(
+        best_model, X_test, y_test,
+        n_repeats=10, scoring='roc_auc', random_state=42, n_jobs=-1,
+    )
     importances = sorted(
-        zip(FEATURE_COLS, clf.feature_importances_),
+        zip(FEATURE_COLS, perm.importances_mean),
         key=lambda x: x[1],
         reverse=True,
     )
     print('-' * 50)
-    print('  ВАЖНОСТЬ ПРИЗНАКОВ (top-7)')
+    print('  FEATURE IMPORTANCES (permutation, top-7)')
     print('-' * 50)
     for feat, imp in importances[:7]:
-        bar = '#' * int(imp * 40)
+        bar = '#' * max(0, int(imp * 200))
         print(f'  {feat:<28} {imp:.4f} {bar}')
 
     # --- Сохранение ---
@@ -178,6 +188,8 @@ def train(use_grid: bool = True, test_size: float = 0.20) -> dict:
         'best_params': best_params,
         'metrics': metrics,
         'feature_importances': {k: round(float(v), 6) for k, v in importances},
+        'classifier': 'HistGradientBoostingClassifier',
+        'class_weight': 'balanced',
     }
     with open(META_PATH, 'w', encoding='utf-8') as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)

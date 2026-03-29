@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import client from '../api/client'
 import type { Course, Lesson } from '../api/types'
+import ReactMarkdown from 'react-markdown';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,7 +61,10 @@ function ChatPanel({ lesson }: { lesson: Lesson }) {
     setSending(true)
 
     try {
-      const { data } = await client.post<{ answer: string }>('/api/v1/chat/', { question })
+      const { data } = await client.post<{ answer: string }>('/api/v1/chat/', {
+        question: text,
+        lesson_id: lesson.id
+      })
       setMessages((prev) => [...prev, { role: 'assistant', text: data.answer }])
     } catch {
       setMessages((prev) => [
@@ -88,28 +92,38 @@ function ChatPanel({ lesson }: { lesson: Lesson }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0">
-        {messages.length === 0 && (
-          <p className="text-xs text-gray-400 text-center mt-8">
-            Ask a question about the lesson content.
-          </p>
-        )}
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0">
+          {messages.length === 0 && (
+            <p className="text-xs text-gray-400 text-center mt-8">
+              Ask a question about the lesson content.
+            </p>
+          )}
+
+          {messages.map((msg, i) => (
             <div
-              className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap
-                ${msg.role === 'user'
-                  ? 'bg-indigo-600 text-white rounded-br-sm'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-                }`}
+              key={i}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              {msg.text}
+              <div
+                className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed
+                  ${msg.role === 'user'
+                    ? 'bg-indigo-600 text-white rounded-br-sm whitespace-pre-wrap'
+                    : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                  }`}
+              >
+                {/* Вот тут магия: разделяем логику вывода */}
+                {msg.role === 'user' ? (
+                  msg.text
+                ) : (
+                  <div className="prose prose-sm max-w-none break-words">
+                    <ReactMarkdown>
+                        {msg.text}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
         {sending && (
           <div className="flex justify-start">
             <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-2">
@@ -172,6 +186,7 @@ export default function LessonView() {
   const [course, setCourse] = useState<Course | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [completing, setCompleting] = useState(false)
 
   // Fetch the lesson's course so we can find prev/next lessons
   useEffect(() => {
@@ -241,8 +256,16 @@ export default function LessonView() {
     ? flatLessons[currentIndex + 1]
     : null
 
-  const handleComplete = () => {
-    alert('Урок пройден, данные отправлены в ML')
+  const handleComplete = async () => {
+    if (!lesson || completing) return
+    setCompleting(true)
+    try {
+      await client.post(`/analytics/api/complete/${lesson.id}/`)
+    } catch {
+      // Non-blocking: navigate even if the request fails
+    } finally {
+      setCompleting(false)
+    }
     if (nextLesson) {
       navigate(`/lesson/${nextLesson.id}`, {
         state: { courseId: course?.id, courseTitle: state.courseTitle, moduleTitle: state.moduleTitle },
@@ -329,11 +352,12 @@ export default function LessonView() {
             <div className="mt-10 flex items-center gap-4">
               <button
                 onClick={handleComplete}
-                className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white
+                disabled={completing}
+              className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white
                            hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
-                           transition-colors"
+                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {nextLesson ? 'Complete & next lesson →' : 'Complete lesson'}
+                {completing ? 'Saving...' : nextLesson ? 'Complete & next lesson →' : 'Complete lesson'}
               </button>
               {nextLesson && (
                 <span className="text-xs text-gray-400">Next: {nextLesson.title}</span>
