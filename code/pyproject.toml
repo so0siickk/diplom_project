@@ -1,0 +1,37 @@
+[project]
+name = "new-dl-project"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Савин Савелий",email = "savin.se@edu.spbstu.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "django (==5.0.1)",
+    "django-environ (>=0.11.0,<0.12.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "pypdf (>=4.0.0,<5.0.0)",
+    "djangorestframework (>=3.16.1,<4.0.0)",
+    "djangorestframework-simplejwt (>=5.5.0,<6.0.0)",
+    "django-cors-headers (>=4.9.0,<5.0.0)",
+    "drf-spectacular (>=0.29.0,<1.0.0)",
+    "markdown (>=3.10,<4.0)",
+    "django-filter (<25)",
+
+    # --- Блок AI (Здесь мы фиксируем совместимость) ---
+    "langchain (>=0.3.0,<0.4.0)",
+    "langchain-community (>=0.3.0,<0.4.0)",
+    "langchain-gigachat (>=0.3.0,<0.4.0)",
+
+    # Вот эти две версии критически важны для работы с GigaChat:
+    "langchain-huggingface (>=0.1.0,<0.2.0)",
+    "langchain-chroma (>=0.1.4,<0.2.0)",
+
+    "chromadb (>=0.5.0,<0.6.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

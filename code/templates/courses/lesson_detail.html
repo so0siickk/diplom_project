@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-3">
+    <!-- Ссылка назад на курс -->
+    <a href="{% url 'course-detail-html' lesson.module.course.id %}" class="text-decoration-none">← Назад к курсу</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="card-title">{{ lesson.title }}</h1>
+        <h6 class="card-subtitle mb-4 text-muted">Модуль: {{ lesson.module.title }}</h6>
+        
+        <div class="card-text fs-5">
+            <!-- linebreaksbr сохраняет переносы строк из текста -->
+            {{ lesson.content|linebreaksbr }}
+        </div>
+
+        {% if lesson.video_url %}
+        <div class="mt-4">
+            <h5>Видеоматериал:</h5>
+            <a href="{{ lesson.video_url }}" target="_blank" class="btn btn-outline-danger">Смотреть видео</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<hr class="my-4">
+
+        <div class="d-flex justify-content-between align-items-center">
+            {% if user.is_authenticated %}
+                {% if is_completed %}
+                    <button class="btn btn-success disabled">✅ Урок пройден</button>
+                {% else %}
+                    <form action="{% url 'complete-lesson' lesson.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Отметить как пройденный</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <div class="text-muted">Войдите, чтобы сохранять прогресс</div>
+            {% endif %}
+
+            <!-- Кнопка "Следующий урок" (пока заглушка, логику сделаем позже) -->
+            <!-- <a href="#" class="btn btn-outline-secondary">Следующий урок →</a> -->
+        </div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{
+  "trained_at": "2026-03-25T14:30:08.156199+00:00",
+  "feature_cols": [
+    "lesson_order",
+    "module_order",
+    "lesson_position_ratio",
+    "prev_avg_score",
+    "prev_avg_time",
+    "prev_avg_attempts",
+    "prev_completion_rate",
+    "prev_lessons_done",
+    "time_spent_seconds",
+    "attempt_count",
+    "quiz_score"
+  ],
+  "target_col": "target",
+  "train_size": 800,
+  "test_size": 201,
+  "best_params": {
+    "learning_rate": 0.05,
+    "max_depth": 3,
+    "n_estimators": 100,
+    "subsample": 1.0
+  },
+  "metrics": {
+    "accuracy": 0.6567164179104478,
+    "roc_auc": 0.7489819004524887
+  },
+  "feature_importances": {
+    "quiz_score": 0.546942,
+    "prev_avg_score": 0.084918,
+    "lesson_position_ratio": 0.083906,
+    "time_spent_seconds": 0.070008,
+    "prev_avg_attempts": 0.060611,
+    "prev_avg_time": 0.048018,
+    "attempt_count": 0.03699,
+    "prev_completion_rate": 0.023671,
+    "prev_lessons_done": 0.02367,
+    "lesson_order": 0.020551,
+    "module_order": 0.000715
+  }
+}

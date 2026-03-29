@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Доступные курсы</h1>
+
+<div class="row">
+    {% for course in courses %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.title }}</h5>
+                <p class="card-text text-muted">{{ course.description|truncatewords:20 }}</p>
+                <a href="{% url 'course-detail-html' course.id %}" class="btn btn-primary">Перейти к курсу</a>
+            </div>
+            <div class="card-footer text-muted">
+                Автор: {{ course.owner.username }}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">Пока нет доступных курсов. Загляните в админку!</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
