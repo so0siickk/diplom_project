@@ -48,17 +48,17 @@ const RISK_CONFIG: Record<RiskLevel, {
   icon: React.ReactNode
 }> = {
   high: {
-    label: 'High',
+    label: 'Высокий',
     badge: 'bg-red-100 text-red-700 border-red-200',
     icon: <AlertTriangle size={13} className="text-red-500" />,
   },
   medium: {
-    label: 'Medium',
+    label: 'Средний',
     badge: 'bg-amber-100 text-amber-700 border-amber-200',
     icon: <MinusCircle size={13} className="text-amber-500" />,
   },
   low: {
-    label: 'Low',
+    label: 'Низкий',
     badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     icon: <CheckCircle2 size={13} className="text-emerald-500" />,
   },
@@ -102,9 +102,9 @@ function EmptyState() {
       <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
         <Users size={28} className="text-indigo-400" />
       </div>
-      <h3 className="text-base font-semibold text-gray-700 mb-1">No students yet</h3>
+      <h3 className="text-base font-semibold text-gray-700 mb-1">Студентов пока нет</h3>
       <p className="text-sm text-gray-400 max-w-xs">
-        Once students enroll and start lessons, their progress and risk scores will appear here.
+        Как только студенты запишутся и начнут проходить уроки, здесь появится их прогресс и оценки рисков.
       </p>
     </div>
   )
@@ -124,9 +124,9 @@ function SummaryCards({ students }: { students: StudentStat[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
       {[
-        { icon: <Users size={18} className="text-indigo-600" />, label: 'Total students', value: total,        bg: 'bg-indigo-50' },
-        { icon: <TrendingDown size={18} className="text-red-500" />, label: 'High risk',   value: highRisk,    bg: 'bg-red-50' },
-        { icon: <BookOpen size={18} className="text-emerald-600" />, label: 'Avg lessons completed', value: avgLessons, bg: 'bg-emerald-50' },
+        { icon: <Users size={18} className="text-indigo-600" />, label: 'Всего студентов', value: total,        bg: 'bg-indigo-50' },
+        { icon: <TrendingDown size={18} className="text-red-500" />, label: 'Высокий риск',   value: highRisk,    bg: 'bg-red-50' },
+        { icon: <BookOpen size={18} className="text-emerald-600" />, label: 'Среднее кол-во уроков', value: avgLessons, bg: 'bg-emerald-50' },
       ].map((card) => (
         <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
           <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${card.bg}`}>
@@ -155,7 +155,7 @@ export default function InstructorDashboard() {
   useEffect(() => {
     client.get<StudentStat[]>('/analytics/api/students-stats/')
       .then(({ data }) => setStudents(data))
-      .catch(() => setError('Failed to load student data.'))
+      .catch(() => setError('Не удалось загрузить данные студентов.'))
       .finally(() => setLoading(false))
   }, [])
 
@@ -187,9 +187,9 @@ export default function InstructorDashboard() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Instructor Dashboard</h1>
+        <h1 className="text-xl font-bold text-gray-900">Панель управления инструктора</h1>
         <p className="text-sm text-gray-400 mt-0.5">
-          ML-powered risk scores help you identify students who need attention.
+          Оценки рисков на базе ML помогают выявить студентов, которым требуется внимание.
         </p>
       </div>
 
@@ -206,10 +206,10 @@ export default function InstructorDashboard() {
       {/* Sort controls */}
       {!loading && students.length > 0 && (
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs text-gray-400 mr-1">Sort by:</span>
-          <SortBtn k="risk_score"        label="Risk ↓" />
-          <SortBtn k="lessons_completed" label="Lessons ↓" />
-          <SortBtn k="avg_score"         label="Score ↓" />
+          <span className="text-xs text-gray-400 mr-1">Сортировать по:</span>
+          <SortBtn k="risk_score"        label="Риску ↓" />
+          <SortBtn k="lessons_completed" label="Урокам ↓" />
+          <SortBtn k="avg_score"         label="Баллам ↓" />
         </div>
       )}
 
@@ -235,11 +235,11 @@ export default function InstructorDashboard() {
           {/* Table head */}
           <div className="grid grid-cols-[2fr_1fr_1fr_3fr_1fr] gap-4 px-6 py-3
                           bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wide">
-            <span>Student</span>
-            <span>Progress</span>
-            <span>Avg score</span>
-            <span>Topic at risk</span>
-            <span>Risk level</span>
+            <span>Студент</span>
+            <span>Прогресс</span>
+            <span>Средний балл</span>
+            <span>Тема под риском</span>
+            <span>Уровень риска</span>
           </div>
 
           {/* Table rows */}
@@ -275,7 +275,7 @@ export default function InstructorDashboard() {
               {/* Topic at risk */}
               <span className="text-sm text-gray-500 truncate">
                 {s.highest_risk_lesson ?? (
-                  <span className="text-gray-300 italic">No pending lessons</span>
+                  <span className="text-gray-300 italic">Нет ожидаемых уроков</span>
                 )}
               </span>
 
@@ -287,7 +287,7 @@ export default function InstructorDashboard() {
       )}
 
       <p className="text-xs text-gray-300 mt-3">
-        Risk score = 1 − P(completion) predicted by the ML model. Updated on each recommendation request.
+        Оценка риска = 1 − P(completion), предсказанная ML-моделью. Обновляется при каждом запросе рекомендации.
       </p>
     </div>
   )

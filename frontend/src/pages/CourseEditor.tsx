@@ -116,10 +116,10 @@ function emptyDraft(): DraftCourse {
 
 function SaveBtn({ status, onClick }: { status: SaveStatus; onClick: () => void }) {
   const map: Record<SaveStatus, { label: string; cls: string; icon: React.ReactNode }> = {
-    idle:   { label: 'Save',         cls: 'bg-indigo-600 hover:bg-indigo-700 text-white',  icon: <Save size={14} /> },
-    saving: { label: 'Saving…',      cls: 'bg-indigo-400 cursor-not-allowed text-white',   icon: <Loader2 size={14} className="animate-spin" /> },
-    saved:  { label: 'Saved',        cls: 'bg-emerald-600 text-white',                     icon: <CheckCircle2 size={14} /> },
-    error:  { label: 'Error — retry',cls: 'bg-red-600 hover:bg-red-700 text-white',        icon: <AlertCircle size={14} /> },
+    idle:   { label: 'Сохранить',           cls: 'bg-indigo-600 hover:bg-indigo-700 text-white',  icon: <Save size={14} /> },
+    saving: { label: 'Сохранение…',         cls: 'bg-indigo-400 cursor-not-allowed text-white',   icon: <Loader2 size={14} className="animate-spin" /> },
+    saved:  { label: 'Сохранено',           cls: 'bg-emerald-600 text-white',                     icon: <CheckCircle2 size={14} /> },
+    error:  { label: 'Ошибка — повторить', cls: 'bg-red-600 hover:bg-red-700 text-white',        icon: <AlertCircle size={14} /> },
   }
   const { label, cls, icon } = map[status]
 
@@ -168,25 +168,25 @@ function CoursePanel({
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold text-gray-900">Course Settings</h2>
+        <h2 className="text-base font-semibold text-gray-900">Настройки курса</h2>
         <SaveBtn status={saveStatus} onClick={onSave} />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <Field label="Title">
+        <Field label="Заголовок">
           <input
             value={draft.title}
             onChange={(e) => onUpdate({ title: e.target.value })}
-            placeholder="e.g. Introduction to Machine Learning"
+            placeholder="например, Введение в машинное обучение"
             className={inputCls}
           />
         </Field>
-        <Field label="Description">
+        <Field label="Описание">
           <textarea
             value={draft.description}
             onChange={(e) => onUpdate({ description: e.target.value })}
             rows={4}
-            placeholder="What will students learn in this course?"
+            placeholder="Что студенты узнают на этом курсе?"
             className={`${inputCls} resize-none`}
           />
         </Field>
@@ -194,7 +194,7 @@ function CoursePanel({
         {draft.id === null && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100
                          rounded-lg px-3 py-2">
-            Save the course first — then you can add modules and lessons.
+            Сначала сохраните курс — затем вы сможете добавлять модули и уроки.
           </p>
         )}
       </div>
@@ -219,29 +219,29 @@ function ModulePanel({
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold text-gray-900">Module {mi + 1}</h2>
+        <h2 className="text-base font-semibold text-gray-900">Модуль {mi + 1}</h2>
         <SaveBtn status={saveStatus} onClick={onSave} />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <Field label="Title">
+        <Field label="Заголовок">
           <input
             value={mod.title}
             onChange={(e) => onUpdate({ title: e.target.value })}
-            placeholder="Module title"
+            placeholder="Заголовок модуля"
             className={inputCls}
           />
         </Field>
-        <Field label="Description (optional)">
+        <Field label="Описание (необязательно)">
           <textarea
             value={mod.description}
             onChange={(e) => onUpdate({ description: e.target.value })}
             rows={3}
-            placeholder="Brief description of this module"
+            placeholder="Краткое описание этого модуля"
             className={`${inputCls} resize-none`}
           />
         </Field>
-        <Field label="Display order">
+        <Field label="Порядок отображения">
           <input
             type="number"
             min={1}
@@ -254,7 +254,7 @@ function ModulePanel({
         {courseUnsaved && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100
                          rounded-lg px-3 py-2">
-            Save the course before saving this module.
+            Сохраните курс перед сохранением этого модуля.
           </p>
         )}
       </div>
@@ -280,12 +280,12 @@ function LessonPanel({
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold text-gray-900">Lesson Editor</h2>
+        <h2 className="text-base font-semibold text-gray-900">Редактор урока</h2>
         <div className="flex items-center gap-3">
           {saveStatus === 'saved' && (
             <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-100
                               rounded-full px-2 py-0.5">
-              RAG index updated
+              Индекс RAG обновлен
             </span>
           )}
           <SaveBtn status={saveStatus} onClick={onSave} />
@@ -295,11 +295,11 @@ function LessonPanel({
       <div className="space-y-4">
         {/* Title */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <Field label="Title">
+          <Field label="Заголовок">
             <input
               value={lesson.title}
               onChange={(e) => onUpdate({ title: e.target.value })}
-              placeholder="Lesson title"
+              placeholder="Заголовок урока"
               className={inputCls}
             />
           </Field>
@@ -321,7 +321,7 @@ function LessonPanel({
                 }`}
               >
                 {t === 'edit' ? <PenLine size={12} /> : <Eye size={12} />}
-                {t === 'edit' ? 'Edit' : 'Preview'}
+                {t === 'edit' ? 'Редактировать' : 'Предпросмотр'}
               </button>
             ))}
             <span className="ml-auto text-[10px] text-gray-300 pr-1">Markdown</span>
@@ -334,7 +334,7 @@ function LessonPanel({
                 value={lesson.content}
                 onChange={(e) => onUpdate({ content: e.target.value })}
                 rows={20}
-                placeholder={'# Lesson Title\n\nWrite lesson content in Markdown…\n\n## Section\n\nParagraph text here.'}
+                placeholder={'# Заголовок урока\n\nНапишите содержание урока в Markdown…\n\n## Секция\n\nТекст параграфа здесь.'}
                 className="w-full text-sm text-gray-800 leading-relaxed resize-y font-mono
                            focus:outline-none placeholder-gray-300 bg-transparent"
                 style={{ minHeight: '360px' }}
@@ -344,7 +344,7 @@ function LessonPanel({
                 {lesson.content ? (
                   <ReactMarkdown>{lesson.content}</ReactMarkdown>
                 ) : (
-                  <p className="text-gray-300 italic text-sm">Nothing to preview yet.</p>
+                  <p className="text-gray-300 italic text-sm">Пока нечего просматривать.</p>
                 )}
               </div>
             )}
@@ -353,7 +353,7 @@ function LessonPanel({
 
         {/* Video URL */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <Field label="Video URL (optional)">
+          <Field label="URL видео (необязательно)">
             <input
               value={lesson.video_url}
               onChange={(e) => onUpdate({ video_url: e.target.value })}
@@ -366,7 +366,7 @@ function LessonPanel({
         {moduleUnsaved && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100
                          rounded-lg px-3 py-2">
-            Save the module before saving this lesson.
+            Сохраните модуль перед сохранением этого урока.
           </p>
         )}
       </div>
@@ -413,12 +413,12 @@ function Tree({
           onClick={onBack}
           className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700
                      hover:bg-gray-100 transition-colors"
-          title="Back to My Courses"
+          title="Назад к Моим курсам"
         >
           <ArrowLeft size={15} />
         </button>
         <span className="text-xs font-semibold text-gray-600 truncate">
-          {draft.title || 'New Course'}
+          {draft.title || 'Новый курс'}
         </span>
       </div>
 
@@ -428,7 +428,7 @@ function Tree({
         <TreeRow
           depth={0}
           icon={<Settings size={13} className="text-gray-400" />}
-          label="Course Settings"
+          label="Настройки курса"
           active={selection.type === 'course'}
           onClick={() => onSelect({ type: 'course' })}
         />
@@ -455,18 +455,18 @@ function Tree({
               <span className={`flex-1 text-sm truncate ${
                 isModule(mi) ? 'text-indigo-700 font-medium' : 'text-gray-700'
               }`}>
-                {mod.title || 'Untitled Module'}
+                {mod.title || 'Без названия'}
               </span>
 
               {mod.id === null && (
-                <span className="text-[10px] text-amber-500 flex-shrink-0 mr-1">unsaved</span>
+                <span className="text-[10px] text-amber-500 flex-shrink-0 mr-1">не сохранено</span>
               )}
 
               <button
                 onClick={(e) => { e.stopPropagation(); onDeleteModule(mi) }}
                 className="opacity-0 group-hover:opacity-100 p-0.5 flex-shrink-0
                            text-gray-300 hover:text-red-500 transition-all"
-                title="Delete module"
+                title="Удалить модуль"
               >
                 <Trash2 size={12} />
               </button>
@@ -486,16 +486,16 @@ function Tree({
                     <span className={`flex-1 text-sm truncate ${
                       isLesson(mi, li) ? 'text-indigo-700 font-medium' : 'text-gray-600'
                     }`}>
-                      {lesson.title || 'Untitled Lesson'}
+                      {lesson.title || 'Без названия'}
                     </span>
                     {lesson.id === null && (
-                      <span className="text-[10px] text-amber-500 flex-shrink-0 mr-1">unsaved</span>
+                      <span className="text-[10px] text-amber-500 flex-shrink-0 mr-1">не сохранено</span>
                     )}
                     <button
                       onClick={(e) => { e.stopPropagation(); onDeleteLesson(mi, li) }}
                       className="opacity-0 group-hover:opacity-100 p-0.5 flex-shrink-0
                                  text-gray-300 hover:text-red-500 transition-all"
-                      title="Delete lesson"
+                      title="Удалить урок"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -511,7 +511,7 @@ function Tree({
                              transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Plus size={11} />
-                  Add lesson
+                  Добавить урок
                 </button>
               </div>
             )}
@@ -526,10 +526,10 @@ function Tree({
             className="flex items-center gap-1.5 w-full px-3 py-2 text-xs
                        text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
                        transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            title={draft.id === null ? 'Save the course first' : 'Add a new module'}
+            title={draft.id === null ? 'Сначала сохраните курс' : 'Добавить новый модуль'}
           >
             <Plus size={13} />
-            Add module
+            Добавить модуль
           </button>
         </div>
       </div>
@@ -709,7 +709,7 @@ export default function CourseEditor() {
     const newMod: DraftModule = {
       _key: nk(),
       id: null,
-      title: 'New Module',
+      title: 'Новый модуль',
       description: '',
       order: draft.modules.length + 1,
       expanded: true,
@@ -724,7 +724,7 @@ export default function CourseEditor() {
     const newLesson: DraftLesson = {
       _key: nk(),
       id: null,
-      title: 'New Lesson',
+      title: 'Новый урок',
       content: '',
       video_url: '',
       order: draft.modules[mi].lessons.length + 1,
@@ -741,7 +741,7 @@ export default function CourseEditor() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-sm text-gray-400">Loading course…</p>
+        <p className="text-sm text-gray-400">Загрузка курса…</p>
       </div>
     )
   }

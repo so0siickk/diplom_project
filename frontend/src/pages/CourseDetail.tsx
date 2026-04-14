@@ -62,7 +62,7 @@ function EnrollHero({
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full
                            bg-white/10 border border-white/20 text-xs font-medium mb-5">
             <BookOpen size={12} />
-            Free course
+            Бесплатный курс
           </span>
 
           <h1 className="text-3xl font-bold leading-tight mb-3">{course.title}</h1>
@@ -82,7 +82,7 @@ function EnrollHero({
               <div>
                 <p className="text-xl font-bold leading-none">{course.modules.length}</p>
                 <p className="text-xs text-indigo-300 mt-0.5">
-                  module{course.modules.length !== 1 ? 's' : ''}
+                  модул{course.modules.length === 1 ? 'ь' : (course.modules.length > 1 && course.modules.length < 5 ? 'я' : 'ей')}
                 </p>
               </div>
             </div>
@@ -93,7 +93,7 @@ function EnrollHero({
               <div>
                 <p className="text-xl font-bold leading-none">{totalLessons}</p>
                 <p className="text-xs text-indigo-300 mt-0.5">
-                  lesson{totalLessons !== 1 ? 's' : ''}
+                  урок{totalLessons === 1 ? '' : (totalLessons > 1 && totalLessons < 5 ? 'а' : 'ов')}
                 </p>
               </div>
             </div>
@@ -103,7 +103,7 @@ function EnrollHero({
               </div>
               <div>
                 <p className="text-sm font-semibold leading-none">{course.owner}</p>
-                <p className="text-xs text-indigo-300 mt-0.5">instructor</p>
+                <p className="text-xs text-indigo-300 mt-0.5">инструктор</p>
               </div>
             </div>
           </div>
@@ -122,12 +122,12 @@ function EnrollHero({
             {enrolling ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Enrolling…
+                Записываемся…
               </>
             ) : (
               <>
                 <CheckCircle2 size={16} />
-                Enroll Now — It's Free
+                Записаться сейчас — Это бесплатно
               </>
             )}
           </button>
@@ -136,7 +136,7 @@ function EnrollHero({
 
       {/* Course preview — locked content */}
       <div className="max-w-2xl mx-auto px-4 py-10">
-        <h2 className="text-base font-semibold text-gray-700 mb-4">Course Contents</h2>
+        <h2 className="text-base font-semibold text-gray-700 mb-4">Содержание курса</h2>
         <div className="space-y-2">
           {course.modules
             .slice()
@@ -153,7 +153,7 @@ function EnrollHero({
                     )}
                   </div>
                   <span className="text-xs text-gray-400 flex-shrink-0">
-                    {mod.lessons.length} lesson{mod.lessons.length !== 1 ? 's' : ''}
+                    {mod.lessons.length} урок{mod.lessons.length === 1 ? '' : (mod.lessons.length > 1 && mod.lessons.length < 5 ? 'а' : 'ов')}
                   </span>
                 </div>
                 {/* Locked lessons */}
@@ -183,7 +183,7 @@ function EnrollHero({
             className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium
                        rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-60"
           >
-            {enrolling ? 'Enrolling…' : 'Get started — Enroll for free'}
+            {enrolling ? 'Записываемся…' : 'Начать обучение — Записаться бесплатно'}
           </button>
         </div>
       </div>
@@ -211,7 +211,7 @@ function CourseContent({
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 px-6 py-3 border-b border-gray-100 bg-white text-sm">
         <Link to="/" className="text-gray-400 hover:text-gray-700 transition-colors">
-          My Courses
+          Мои курсы
         </Link>
         <span className="text-gray-300">›</span>
         <span className="font-medium text-gray-700 truncate">{course.title}</span>
@@ -225,11 +225,11 @@ function CourseContent({
             <p className="mt-2 text-sm text-gray-500">{course.description}</p>
           )}
           <div className="mt-3 flex gap-4 text-xs text-gray-400">
-            <span>{course.modules.length} module{course.modules.length !== 1 ? 's' : ''}</span>
+            <span>{course.modules.length} модул{course.modules.length === 1 ? 'ь' : (course.modules.length > 1 && course.modules.length < 5 ? 'я' : 'ей')}</span>
             <span>·</span>
-            <span>{totalLessons} lesson{totalLessons !== 1 ? 's' : ''}</span>
+            <span>{totalLessons} урок{totalLessons === 1 ? '' : (totalLessons > 1 && totalLessons < 5 ? 'а' : 'ов')}</span>
             <span>·</span>
-            <span>by {course.owner}</span>
+            <span>от {course.owner}</span>
           </div>
         </div>
 
@@ -255,7 +255,7 @@ function CourseContent({
                     </div>
                     <div className="flex items-center gap-3 ml-4 flex-shrink-0">
                       <span className="text-xs text-gray-400">
-                        {mod.lessons.length} lesson{mod.lessons.length !== 1 ? 's' : ''}
+                        {mod.lessons.length} урок{mod.lessons.length === 1 ? '' : (mod.lessons.length > 1 && mod.lessons.length < 5 ? 'а' : 'ов')}
                       </span>
                       <ChevronIcon open={isOpen} />
                     </div>
@@ -291,7 +291,7 @@ function CourseContent({
 
                   {isOpen && mod.lessons.length === 0 && (
                     <p className="px-5 py-3 text-xs text-gray-400 border-t border-gray-100">
-                      No lessons in this module yet.
+                      В этом модуле пока нет уроков.
                     </p>
                   )}
                 </div>
@@ -333,7 +333,7 @@ export default function CourseDetail() {
           setOpenModules(new Set(data.modules.map((m) => m.id)))
         }
       })
-      .catch(() => setError('Failed to load course.'))
+      .catch(() => setError('Не удалось загрузить курс.'))
       .finally(() => setLoading(false))
   }, [id])
 
@@ -349,7 +349,7 @@ export default function CourseDetail() {
         setOpenModules(new Set(course.modules.map((m) => m.id)))
       }
     } catch {
-      setEnrollError('Failed to enroll. Please try again.')
+      setEnrollError('Не удалось записаться. Пожалуйста, попробуйте снова.')
     } finally {
       setEnrolling(false)
     }
@@ -367,7 +367,7 @@ export default function CourseDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-sm text-gray-400">Loading course…</p>
+        <p className="text-sm text-gray-400">Загрузка курса…</p>
       </div>
     )
   }
@@ -377,12 +377,12 @@ export default function CourseDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-sm text-red-500 mb-4">{error ?? 'Course not found.'}</p>
+          <p className="text-sm text-red-500 mb-4">{error ?? 'Курс не найден.'}</p>
           <button
             onClick={() => navigate('/')}
             className="text-sm text-indigo-600 hover:underline"
           >
-            Back to Dashboard
+            Вернуться в панель управления
           </button>
         </div>
       </div>

@@ -82,57 +82,53 @@ function CourseCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-3 border-t border-gray-100 min-h-[44px]">
+      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+        <button
+          onClick={onEdit}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                     bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          <Edit3 size={12} />
+          Редактировать
+        </button>
+        <Link
+          to="/instructor"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                     bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          <BarChart2 size={12} />
+          Статистика
+        </Link>
+
+        <div className="flex-1" />
+
         {confirmingDelete ? (
-          <div className="flex items-center justify-between w-full">
-            <span className="text-xs text-red-600 font-medium">Удалить курс?</span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onCancelDelete}
-                className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-600
-                           rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Нет
-              </button>
-              <button
-                onClick={onConfirmDelete}
-                className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white
-                           rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Да
-              </button>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-red-600 font-medium">Удалить?</span>
+            <button
+              onClick={onConfirmDelete}
+              className="px-2 py-1 text-xs font-medium bg-red-600 text-white
+                         rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Да
+            </button>
+            <button
+              onClick={onCancelDelete}
+              className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600
+                         rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Нет
+            </button>
           </div>
         ) : (
-          <>
-            <button
-              onClick={onEdit}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
-                         bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              <Edit3 size={12} />
-              Редактировать
-            </button>
-            <Link
-              to="/instructor"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
-                         bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              <BarChart2 size={12} />
-              Статистика
-            </Link>
-
-            <div className="flex-1" />
-
-            <button
-              onClick={onDelete}
-              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50
-                         rounded-lg transition-colors"
-              title="Удалить курс"
-            >
-              <Trash2 size={14} />
-            </button>
-          </>
+          <button
+            onClick={onDelete}
+            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50
+                       rounded-lg transition-colors"
+            title="Удалить курс"
+          >
+            <Trash2 size={14} />
+          </button>
         )}
       </div>
     </div>

@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: lms_db
+      POSTGRES_USER: lms_user
+      POSTGRES_PASSWORD: lms_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lms_user -d lms_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 2. Django backend
+  backend:
+    image: lms-backend:latest
+    build:
+      context: ./code
+      dockerfile: Dockerfile
+    # Run migrations then start the dev server
+    command: >
+      sh -c "python manage.py migrate --no-input &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./code:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - DATABASE_URL=postgres://lms_user:lms_password@db:5432/lms_db
+      # Mount your real .env to inject SECRET_KEY and GIGACHAT_AUTHORIZATION_KEY,
+      # or set them explicitly here (not recommended for secrets).
+      # SECRET_KEY and GIGACHAT_AUTHORIZATION_KEY are read from ./code/.env via django-environ.
+    env_file:
+      - ./code/.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 3. React / Vite frontend
+  frontend:
+    image: lms-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules   # keep container's node_modules, do not overwrite with host
+    ports:
+      - "5173:5173"
+    environment:
+      # Tells vite.config.ts which host to proxy API requests to
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

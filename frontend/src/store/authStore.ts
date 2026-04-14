@@ -41,7 +41,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       )
       set({ username: data.username, role: data.role })
     } catch {
-      set({ isAuthenticated: false, isLoading: false, error: 'Invalid credentials' })
+      set({ isAuthenticated: false, isLoading: false, error: 'Неверные учетные данные' })
     }
   },
 

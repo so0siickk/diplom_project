@@ -20,7 +20,10 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, []),
 )
-environ.Env.read_env(BASE_DIR / '.env')
+# .env is present in local dev; in Docker the vars come from env_file in compose.
+_env_file = BASE_DIR / '.env'
+if _env_file.exists():
+    environ.Env.read_env(_env_file)
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')

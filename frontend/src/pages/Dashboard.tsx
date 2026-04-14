@@ -42,16 +42,16 @@ function EnrolledCourseCard({
       <p className="text-xs text-gray-500 mt-1 line-clamp-2">{course.description}</p>
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-3 text-xs text-gray-400">
-          <span>{course.modules.length} module{course.modules.length !== 1 ? 's' : ''}</span>
+          <span>{course.modules.length} модул{course.modules.length === 1 ? 'ь' : (course.modules.length > 1 && course.modules.length < 5 ? 'я' : 'ей')}</span>
           <span>·</span>
-          <span>{lessonCount} lesson{lessonCount !== 1 ? 's' : ''}</span>
+          <span>{lessonCount} урок{lessonCount === 1 ? '' : (lessonCount > 1 && lessonCount < 5 ? 'а' : 'ов')}</span>
         </div>
         <Link
           to={`/course/${course.id}`}
           onClick={(e) => e.stopPropagation()}
           className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
         >
-          Open →
+          Открыть →
         </Link>
       </div>
     </div>
@@ -78,10 +78,10 @@ function RecommendationRow({ item, rank }: { item: RecommendationItem; rank: num
       </div>
       <div className="flex-shrink-0 text-right">
         <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${riskColor}`}>
-          risk {Math.round(item.risk_score * 100)}%
+          риск {Math.round(item.risk_score * 100)}%
         </span>
         <p className="text-xs text-gray-400 mt-0.5">
-          completion {Math.round(item.completion_prob * 100)}%
+          завершение {Math.round(item.completion_prob * 100)}%
         </p>
       </div>
     </div>
@@ -112,15 +112,15 @@ function CatalogCard({
         <div className="mt-2 flex items-center gap-3 text-xs text-gray-400">
           <span className="flex items-center gap-1">
             <Layers size={11} />
-            {course.modules.length} module{course.modules.length !== 1 ? 's' : ''}
+            {course.modules.length} модул{course.modules.length === 1 ? 'ь' : (course.modules.length > 1 && course.modules.length < 5 ? 'я' : 'ей')}
           </span>
           <span>·</span>
           <span className="flex items-center gap-1">
             <BookOpen size={11} />
-            {lessonCount} lesson{lessonCount !== 1 ? 's' : ''}
+            {lessonCount} урок{lessonCount === 1 ? '' : (lessonCount > 1 && lessonCount < 5 ? 'а' : 'ов')}
           </span>
         </div>
-        <p className="text-xs text-gray-400 mt-1">by {course.owner}</p>
+        <p className="text-xs text-gray-400 mt-1">от {course.owner}</p>
       </div>
       <div className="pt-2 border-t border-gray-100">
         <button
@@ -133,12 +133,12 @@ function CatalogCard({
           {enrolling ? (
             <>
               <Loader2 size={12} className="animate-spin" />
-              Enrolling…
+              Записываемся…
             </>
           ) : (
             <>
               <Plus size={12} />
-              Enroll for free
+              Записаться бесплатно
             </>
           )}
         </button>
@@ -157,8 +157,8 @@ function NoEnrollmentsPrompt() {
       <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-3">
         <BookOpen size={22} className="text-indigo-400" />
       </div>
-      <p className="text-sm font-medium text-gray-600 mb-1">No courses yet</p>
-      <p className="text-xs text-gray-400">Enroll in a course from the catalog below to get started.</p>
+      <p className="text-sm font-medium text-gray-600 mb-1">Курсов пока нет</p>
+      <p className="text-xs text-gray-400">Запишитесь на курс из каталога ниже, чтобы начать обучение.</p>
     </div>
   )
 }
@@ -201,7 +201,7 @@ export default function Dashboard() {
         if (first) setSelectedCourseId(first.id)
       })
       .catch(() => {
-        if (!cancelled) setCoursesError('Failed to load courses.')
+        if (!cancelled) setCoursesError('Не удалось загрузить курсы.')
       })
       .finally(() => {
         if (!cancelled) setCoursesLoading(false)
@@ -223,7 +223,7 @@ export default function Dashboard() {
         setModelLoaded(data.model_loaded)
       })
       .catch(() => {
-        if (!cancelled) setRecsError('Failed to load recommendations.')
+        if (!cancelled) setRecsError('Не удалось загрузить рекомендации.')
       })
       .finally(() => {
         if (!cancelled) setRecsLoading(false)
@@ -261,7 +261,7 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center gap-2 mb-4">
             <BookOpen size={16} className="text-indigo-500" />
-            <h2 className="text-base font-semibold text-gray-800">My Learning</h2>
+            <h2 className="text-base font-semibold text-gray-800">Моё обучение</h2>
           </div>
 
           {coursesError && (
@@ -306,36 +306,36 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
                     <Sparkles size={14} className="text-indigo-400" />
-                    <h3 className="text-sm font-semibold text-gray-700">Smart Recommendations</h3>
+                    <h3 className="text-sm font-semibold text-gray-700">Умные рекомендации</h3>
                   </div>
                   {modelLoaded === false && (
                     <span className="text-xs text-yellow-600 bg-yellow-50 border border-yellow-200
                                      rounded-full px-2 py-0.5">
-                      ML model not loaded
+                      ML модель не загружена
                     </span>
                   )}
                 </div>
 
                 {selectedCourse && (
                   <p className="text-xs text-gray-400 mb-2">
-                    For: <span className="font-medium text-gray-600">{selectedCourse.title}</span>
+                    Для курса: <span className="font-medium text-gray-600">{selectedCourse.title}</span>
                   </p>
                 )}
 
                 <div className="bg-white rounded-xl border border-gray-200 px-4 py-2 min-h-[180px]">
                   {enrolledCourses.length === 0 ? (
                     <p className="text-sm text-gray-400 py-8 text-center">
-                      Enroll in a course to see AI recommendations.
+                      Запишитесь на курс, чтобы увидеть рекомендации AI.
                     </p>
                   ) : recsLoading ? (
                     <p className="text-sm text-gray-400 py-6 text-center">
-                      Loading recommendations…
+                      Загрузка рекомендаций…
                     </p>
                   ) : recsError ? (
                     <p className="text-sm text-red-500 py-6 text-center">{recsError}</p>
                   ) : recs.length === 0 && selectedCourseId !== null ? (
                     <p className="text-sm text-gray-400 py-6 text-center">
-                      No problem topics! Keep up the good work.
+                      Проблемных тем нет! Так держать.
                     </p>
                   ) : (
                     recs.map((item, i) => (
@@ -346,7 +346,7 @@ export default function Dashboard() {
 
                 {!recsLoading && recs.length > 0 && (
                   <p className="text-xs text-gray-400 mt-2">
-                    Lessons ranked by predicted difficulty (highest risk first).
+                    Уроки ранжированы по предсказанной сложности (самый высокий риск в начале).
                   </p>
                 )}
               </div>
@@ -361,7 +361,7 @@ export default function Dashboard() {
           <section>
             <div className="flex items-center gap-2 mb-4">
               <Layers size={16} className="text-gray-400" />
-              <h2 className="text-base font-semibold text-gray-800">Explore Catalog</h2>
+              <h2 className="text-base font-semibold text-gray-800">Каталог курсов</h2>
               <span className="ml-1 text-xs text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
                 {catalogCourses.length}
               </span>

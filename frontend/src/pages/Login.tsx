@@ -39,7 +39,7 @@ export default function Login() {
         {/* Header */}
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-gray-800">LMS Adaptive</h1>
-          <p className="text-sm text-gray-400 mt-1">Sign in to your account</p>
+          <p className="text-sm text-gray-400 mt-1">Войдите в свой аккаунт</p>
         </div>
 
         {/* Error banner */}
@@ -56,7 +56,7 @@ export default function Login() {
               htmlFor="username"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Username
+              Имя пользователя
             </label>
             <input
               id="username"
@@ -69,7 +69,7 @@ export default function Login() {
                          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
                          disabled:bg-gray-100"
               disabled={isLoading}
-              placeholder="your_username"
+              placeholder="ваше_имя_пользователя"
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function Login() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Password
+              Пароль
             </label>
             <input
               id="password"
@@ -102,7 +102,7 @@ export default function Login() {
                        hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
                        disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Вход...' : 'Войти'}
           </button>
         </form>
       </div>

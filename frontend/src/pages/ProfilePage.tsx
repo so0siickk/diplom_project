@@ -54,9 +54,9 @@ function StatCard({
 // ---------------------------------------------------------------------------
 
 const ACHIEVEMENTS = [
-  { emoji: '🎯', label: 'First lesson', desc: 'Completed your first lesson' },
-  { emoji: '🔥', label: '3-day streak',  desc: 'Studied 3 days in a row' },
-  { emoji: '📚', label: 'Bookworm',      desc: 'Read 10+ lessons' },
+  { emoji: '🎯', label: 'Первый урок', desc: 'Вы завершили свой первый урок' },
+  { emoji: '🔥', label: '3 дня подряд',  desc: 'Вы занимались 3 дня подряд' },
+  { emoji: '📚', label: 'Книжный червь',      desc: 'Прочитано более 10 уроков' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ export default function ProfilePage() {
                   : 'bg-indigo-100 text-indigo-700'
                 }
               `}>
-                {data?.role === 'teacher' ? 'Instructor' : 'Student'}
+                {data?.role === 'teacher' ? 'Инструктор' : 'Студент'}
               </span>
             </>
           )}
@@ -118,29 +118,29 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <StatCard
             icon={<BookCheck size={20} className="text-indigo-600" />}
-            label="Lessons completed"
+            label="Завершено уроков"
             value={data?.lessons_completed ?? 0}
-            sub={`of ${data?.lessons_started ?? 0} started`}
+            sub={`из ${data?.lessons_started ?? 0} начатых`}
             color="bg-indigo-50"
           />
           <StatCard
             icon={<Star size={20} className="text-amber-500" />}
-            label="Average score"
+            label="Средний балл"
             value={data?.avg_score != null ? `${Math.round(data.avg_score * 100)}%` : '—'}
-            sub="across all quizzes"
+            sub="по всем тестам"
             color="bg-amber-50"
           />
           <StatCard
             icon={<LibraryBig size={20} className="text-emerald-600" />}
-            label="Courses enrolled"
+            label="Записан на курсы"
             value={data?.courses_enrolled ?? 0}
             color="bg-emerald-50"
           />
           <StatCard
             icon={<TrendingUp size={20} className="text-sky-600" />}
-            label="Completion rate"
+            label="Процент завершения"
             value={`${completionRate}%`}
-            sub="lessons completed / started"
+            sub="завершено / начато уроков"
             color="bg-sky-50"
           />
         </div>
@@ -150,7 +150,7 @@ export default function ProfilePage() {
       {!loading && data && data.lessons_started > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-8">
           <div className="flex justify-between text-sm mb-2">
-            <span className="font-medium text-gray-700">Overall progress</span>
+            <span className="font-medium text-gray-700">Общий прогресс</span>
             <span className="text-gray-400">{completionRate}%</span>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-2">
@@ -165,7 +165,7 @@ export default function ProfilePage() {
       {/* Achievements (placeholder) */}
       <div>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Achievements
+          Достижения
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {ACHIEVEMENTS.map((a) => (

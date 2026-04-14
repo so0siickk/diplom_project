@@ -69,7 +69,7 @@ function ChatPanel({ lesson }: { lesson: Lesson }) {
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', text: 'Sorry, the assistant is unavailable right now.' },
+        { role: 'assistant', text: 'Извините, ассистент сейчас недоступен.' },
       ])
     } finally {
       setSending(false)
@@ -87,15 +87,15 @@ function ChatPanel({ lesson }: { lesson: Lesson }) {
     <div className="flex flex-col h-full bg-white border-l border-gray-200">
       {/* Chat header */}
       <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-        <p className="text-sm font-semibold text-gray-800">AI Assistant</p>
-        <p className="text-xs text-gray-400 mt-0.5">Ask anything about this lesson</p>
+        <p className="text-sm font-semibold text-gray-800">AI-ассистент</p>
+        <p className="text-xs text-gray-400 mt-0.5">Задайте любой вопрос по этому уроку</p>
       </div>
 
       {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0">
           {messages.length === 0 && (
             <p className="text-xs text-gray-400 text-center mt-8">
-              Ask a question about the lesson content.
+              Задайте вопрос по содержанию урока.
             </p>
           )}
 
@@ -146,7 +146,7 @@ function ChatPanel({ lesson }: { lesson: Lesson }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Ask a question... (Enter to send)"
+            placeholder="Задайте вопрос... (Enter для отправки)"
             disabled={sending}
             className="flex-1 resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm
                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
@@ -158,7 +158,7 @@ function ChatPanel({ lesson }: { lesson: Lesson }) {
             className="flex-shrink-0 rounded-xl bg-indigo-600 px-3 py-2 text-white
                        hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed
                        transition-colors"
-            aria-label="Send"
+            aria-label="Отправить"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -166,7 +166,7 @@ function ChatPanel({ lesson }: { lesson: Lesson }) {
             </svg>
           </button>
         </div>
-        <p className="text-xs text-gray-300 mt-1">Shift+Enter for new line</p>
+        <p className="text-xs text-gray-300 mt-1">Shift+Enter для переноса строки</p>
       </div>
     </div>
   )
@@ -210,7 +210,7 @@ export default function LessonView() {
           return
         }
       }
-      setError('Lesson not found in course.')
+      setError('Урок не найден в курсе.')
     }
 
     const run = async () => {
@@ -231,10 +231,10 @@ export default function LessonView() {
             }
             if (found) break
           }
-          if (!found) setError('Lesson not found.')
+          if (!found) setError('Урок не найден.')
         }
       } catch {
-        setError('Failed to load lesson.')
+        setError('Не удалось загрузить урок.')
       } finally {
         setLoading(false)
       }
@@ -280,7 +280,7 @@ export default function LessonView() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-sm text-gray-400">Loading lesson...</p>
+        <p className="text-sm text-gray-400">Загрузка урока...</p>
       </div>
     )
   }
@@ -289,9 +289,9 @@ export default function LessonView() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-sm text-red-500 mb-4">{error ?? 'Lesson not found.'}</p>
+          <p className="text-sm text-red-500 mb-4">{error ?? 'Урок не найден.'}</p>
           <button onClick={() => navigate('/')} className="text-sm text-indigo-600 hover:underline">
-            Back to Dashboard
+            Вернуться в панель управления
           </button>
         </div>
       </div>
@@ -308,7 +308,7 @@ export default function LessonView() {
           onClick={() => navigate(`/course/${course.id}`)}
           className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
         >
-          ← {state.courseTitle ?? 'Course'}
+          ← {state.courseTitle ?? 'Курс'}
         </button>
         {state.moduleTitle && (
           <>
@@ -344,7 +344,7 @@ export default function LessonView() {
               {lesson.content ? (
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{lesson.content}</p>
               ) : (
-                <p className="text-gray-400 italic">No content for this lesson yet.</p>
+                <p className="text-gray-400 italic">Для этого урока пока нет содержания.</p>
               )}
             </div>
 
@@ -357,10 +357,10 @@ export default function LessonView() {
                            hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {completing ? 'Saving...' : nextLesson ? 'Complete & next lesson →' : 'Complete lesson'}
+                {completing ? 'Сохранение...' : nextLesson ? 'Завершить и следующий урок →' : 'Завершить урок'}
               </button>
               {nextLesson && (
-                <span className="text-xs text-gray-400">Next: {nextLesson.title}</span>
+                <span className="text-xs text-gray-400">Далее: {nextLesson.title}</span>
               )}
             </div>
           </article>

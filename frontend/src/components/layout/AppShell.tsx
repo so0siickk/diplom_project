@@ -31,10 +31,10 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'My Courses',    to: '/',                       icon: <BookOpen      size={18} /> },
-  { label: 'Profile',       to: '/profile',                icon: <User          size={18} /> },
-  { label: 'Instructor',    to: '/instructor',             icon: <GraduationCap size={18} />, teacherOnly: true },
-  { label: 'Course Editor', to: '/instructor/my-courses',  icon: <PenLine       size={18} />, teacherOnly: true },
+  { label: 'Мои курсы',       to: '/',                       icon: <BookOpen      size={18} /> },
+  { label: 'Профиль',         to: '/profile',                icon: <User          size={18} /> },
+  { label: 'Инструктор',      to: '/instructor',             icon: <GraduationCap size={18} />, teacherOnly: true },
+  { label: 'Редактор курсов', to: '/instructor/my-courses',  icon: <PenLine       size={18} />, teacherOnly: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ function Sidebar({
                        text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"
           >
             <LogOut size={18} className="flex-shrink-0" />
-            {open && <span>Log out</span>}
+            {open && <span>Выйти</span>}
           </button>
         </div>
       </aside>
@@ -146,7 +146,7 @@ function Header({
       <button
         onClick={onToggle}
         className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-        aria-label="Toggle sidebar"
+        aria-label="Переключить боковую панель"
       >
         {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
@@ -192,7 +192,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Header
         sidebarOpen={sidebarOpen}
         onToggle={() => setSidebarOpen((v) => !v)}
-        username={username || 'User'}
+        username={username || 'Пользователь'}
       />
 
       {/* Page content — offset for sidebar and header */}
