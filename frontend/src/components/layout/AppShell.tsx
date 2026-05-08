@@ -8,14 +8,15 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
+  Activity,
   BookOpen,
-  User,
+  ChevronRight,
   GraduationCap,
   LogOut,
   Menu,
   PenLine,
+  User,
   X,
-  ChevronRight,
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 
@@ -28,13 +29,15 @@ interface NavItem {
   to: string
   icon: React.ReactNode
   teacherOnly?: boolean
+  studentOnly?: boolean
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Мои курсы',       to: '/',                       icon: <BookOpen      size={18} /> },
-  { label: 'Профиль',         to: '/profile',                icon: <User          size={18} /> },
+  { label: 'Мои курсы',       to: '/',                       icon: <BookOpen      size={18} />, studentOnly: true },
+  { label: 'Профиль',         to: '/profile',                icon: <User          size={18} />, studentOnly: true },
   { label: 'Инструктор',      to: '/instructor',             icon: <GraduationCap size={18} />, teacherOnly: true },
   { label: 'Редактор курсов', to: '/instructor/my-courses',  icon: <PenLine       size={18} />, teacherOnly: true },
+  { label: 'Риски',           to: '/instructor/risk',        icon: <Activity      size={18} />, teacherOnly: true },
 ]
 
 // ---------------------------------------------------------------------------
@@ -83,7 +86,11 @@ function Sidebar({
 
         {/* Nav */}
         <nav className="flex-1 py-4 overflow-hidden">
-          {NAV_ITEMS.filter((item) => !item.teacherOnly || role === 'teacher').map((item) => (
+          {NAV_ITEMS.filter((item) => {
+            if (item.teacherOnly && role !== 'teacher') return false
+            if (item.studentOnly && role === 'teacher') return false
+            return true
+          }).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Min, Q
 from django.views.decorators.http import require_POST
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from courses.models import Course, Lesson
 from .models import UserLessonProgress
-from .services import get_recommendations
+from .services import get_recommendations, get_model
 
 User = get_user_model()
 
@@ -93,7 +93,7 @@ def students_stats(request):
         return Response({'detail': 'Permission denied.'}, status=403)
 
     # One query: per-user aggregation over progress records
-    rows = (
+    rows = list(
         User.objects
         .filter(role='student')
         .annotate(
@@ -105,6 +105,19 @@ def students_stats(request):
         .order_by('username')
         .values('id', 'username', 'lessons_completed', 'avg_score')
     )
+
+    # Pre-fetch heuristic risk scores — one query, no per-row lookups
+    from analytics.models import StudentRiskScore
+    risk_cache: dict[int, float] = {
+        r['user_id']: r['risk_score']
+        for r in StudentRiskScore.objects.values('user_id', 'risk_score')
+    }
+
+    # Pre-fetch full User objects to avoid User.objects.get() inside the loop
+    student_map: dict[int, User] = {
+        u.pk: u
+        for u in User.objects.filter(role='student')
+    }
 
     # Prefetch one course per student for ML lookup (cheapest: first enrolled course)
     enrolled: dict[int, Course | None] = {}
@@ -122,22 +135,27 @@ def students_stats(request):
     for row in rows:
         uid = row['id']
         avg = row['avg_score']
-        student = User(id=uid, username=row['username'])  # lightweight shell for ML call
 
         highest_risk_lesson: str | None = None
         risk_score: float | None = None
 
         course = enrolled.get(uid)
-        if course is not None:
-            # get_recommendations already excludes completed lessons and sorts by risk DESC
+        student_obj = student_map.get(uid)
+        if course is not None and student_obj is not None:
             try:
-                student_obj = User.objects.get(id=uid)
                 recs = get_recommendations(student_obj, course, top_n=1)
                 if recs:
-                    highest_risk_lesson = f"{recs[0]['module_title']} → {recs[0]['lesson_title']}"
+                    highest_risk_lesson = (
+                        f"{recs[0]['module_title']} → {recs[0]['lesson_title']}"
+                    )
                     risk_score = recs[0]['risk_score']
             except Exception:
                 pass
+
+        # Fallback: use pre-computed heuristic when ML model absent
+        # or student finished all lessons (get_recommendations returns [])
+        if risk_score is None:
+            risk_score = risk_cache.get(uid)
 
         result.append({
             'user_id':             uid,
@@ -277,4 +295,94 @@ def recommendations_api(request, course_id: int):
         'model_loaded': get_model() is not None,
         'recommendations': recommendations,
     })
+
+
+def _risk_level(risk_score: float) -> str:
+    if risk_score > 0.6:
+        return 'red'
+    if risk_score > 0.3:
+        return 'yellow'
+    return 'green'
+
+
+@extend_schema(
+    tags=['Analytics'],
+    summary='Risk analytics dashboard for teachers/staff',
+    responses={200: {
+        'type': 'array',
+        'items': {
+            'type': 'object',
+            'properties': {
+                'user_id':           {'type': 'integer'},
+                'username':          {'type': 'string'},
+                'average_score':     {'type': 'number', 'description': '0–100'},
+                'completed_lessons': {'type': 'integer'},
+                'risk_score':        {'type': 'number', 'description': '0.0–1.0'},
+                'risk_level':        {'type': 'string', 'enum': ['green', 'yellow', 'red']},
+                'problematic_topic': {'type': 'string', 'nullable': True},
+            },
+        },
+    }},
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_risk_analytics(request) -> Response:
+    """
+    GET /analytics/api/risk/
+
+    Per-student risk summary for the teacher dashboard.
+    Access: teachers (role='teacher') and staff only.
+
+    Risk score formula (prototype stub):
+        risk_score = 1.0 - (average_score / 100)
+    Replace with ML model output once model.pkl is deployed.
+    """
+    if request.user.role != 'teacher' and not request.user.is_staff:
+        return Response({'detail': 'Permission denied.'}, status=403)
+
+    # One query: aggregate per student
+    rows = list(
+        User.objects
+        .filter(role='student')
+        .annotate(
+            avg_quiz_score=Avg('progress__quiz_score'),
+            completed_lessons=Count(
+                'progress__id', filter=Q(progress__is_completed=True)
+            ),
+        )
+        .order_by('username')
+        .values('id', 'username', 'avg_quiz_score', 'completed_lessons')
+    )
+
+    # One query: worst-scoring lesson per student
+    # Progress records are ordered ascending by quiz_score so the first record
+    # per user is the lesson with the lowest score.
+    worst_lesson: dict[int, str] = {}
+    for rec in (
+        UserLessonProgress.objects
+        .filter(user__role='student', quiz_score__isnull=False)
+        .order_by('quiz_score')
+        .values('user_id', 'lesson__title')
+    ):
+        uid = rec['user_id']
+        if uid not in worst_lesson:
+            worst_lesson[uid] = rec['lesson__title']
+
+    result = []
+    for row in rows:
+        avg_qs = row['avg_quiz_score']  # 0–1 float or None
+        average_score = round(avg_qs * 100, 1) if avg_qs is not None else 0.0
+        risk_score = round(1.0 - (average_score / 100), 4)
+
+        result.append({
+            'user_id':           row['id'],
+            'username':          row['username'],
+            'average_score':     average_score,
+            'completed_lessons': row['completed_lessons'],
+            'risk_score':        risk_score,
+            'risk_level':        _risk_level(risk_score),
+            'problematic_topic': worst_lesson.get(row['id']),
+        })
+
+    return Response(result)
 

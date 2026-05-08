@@ -17,8 +17,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import client from '../api/client'
+import { useAuthStore } from '../store/authStore'
 import type { Course, Lesson } from '../api/types'
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from 'react-markdown'
+import AssignmentDispatcher from '../components/AssignmentDispatcher'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -181,6 +183,7 @@ export default function LessonView() {
   const navigate = useNavigate()
   const location = useLocation()
   const state = (location.state ?? {}) as LocationState
+  const role = useAuthStore((s) => s.role)
 
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [course, setCourse] = useState<Course | null>(null)
@@ -348,21 +351,36 @@ export default function LessonView() {
               )}
             </div>
 
-            {/* Complete button */}
-            <div className="mt-10 flex items-center gap-4">
-              <button
-                onClick={handleComplete}
-                disabled={completing}
-              className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white
-                           hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
-                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {completing ? 'Сохранение...' : nextLesson ? 'Завершить и следующий урок →' : 'Завершить урок'}
-              </button>
-              {nextLesson && (
-                <span className="text-xs text-gray-400">Далее: {nextLesson.title}</span>
-              )}
-            </div>
+            {/* Assignments */}
+            {lesson.assignments?.length > 0 && (
+              <div className="mt-10 space-y-4">
+                <h2 className="text-base font-semibold text-gray-800">Задания к уроку</h2>
+                {lesson.assignments
+                  .slice()
+                  .sort((a, b) => a.order - b.order)
+                  .map((assignment) => (
+                    <AssignmentDispatcher key={assignment.id} assignment={assignment} />
+                  ))}
+              </div>
+            )}
+
+            {/* Complete button — скрыт для преподавателя, чтобы не засорять ML-аналитику */}
+            {role !== 'teacher' && (
+              <div className="mt-10 flex items-center gap-4">
+                <button
+                  onClick={handleComplete}
+                  disabled={completing}
+                  className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white
+                             hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                             disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {completing ? 'Сохранение...' : nextLesson ? 'Завершить и следующий урок →' : 'Завершить урок'}
+                </button>
+                {nextLesson && (
+                  <span className="text-xs text-gray-400">Далее: {nextLesson.title}</span>
+                )}
+              </div>
+            )}
           </article>
         </div>
 

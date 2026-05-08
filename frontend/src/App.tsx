@@ -10,6 +10,10 @@ import ProfilePage from './pages/ProfilePage'
 import InstructorDashboard from './pages/InstructorDashboard'
 import MyCourses from './pages/MyCourses'
 import CourseEditor from './pages/CourseEditor'
+import TeacherCoursePage from './pages/TeacherCoursePage'
+import StudentAssignmentPage from './pages/StudentAssignmentPage'
+import TeacherAssignmentPage from './pages/TeacherAssignmentPage'
+import RiskDashboard from './pages/RiskDashboard'
 
 const NotFoundPage = () => (
   <div className="p-8">
@@ -28,6 +32,22 @@ function ShellRoute({ children }: { children: React.ReactNode }) {
     <PrivateRoute>
       <AppShell>{children}</AppShell>
     </PrivateRoute>
+  )
+}
+
+// Pages accessible only to a specific role; redirects others to home
+function RoleRoute({
+  role,
+  children,
+}: {
+  role: 'teacher' | 'student'
+  children: React.ReactNode
+}) {
+  const currentRole = useAuthStore((s) => s.role)
+  return currentRole === role ? (
+    <ShellRoute>{children}</ShellRoute>
+  ) : (
+    <Navigate to="/" replace />
   )
 }
 
@@ -53,6 +73,30 @@ export default function App() {
         <Route path="/instructor/my-courses" element={<ShellRoute><MyCourses /></ShellRoute>} />
         <Route path="/instructor/new"        element={<ShellRoute><CourseEditor /></ShellRoute>} />
         <Route path="/instructor/edit/:id"   element={<ShellRoute><CourseEditor /></ShellRoute>} />
+
+        {/* Teacher: course documents management */}
+        <Route
+          path="/instructor/courses/:courseId"
+          element={<RoleRoute role="teacher"><TeacherCoursePage /></RoleRoute>}
+        />
+
+        {/* Teacher: review assignment submissions */}
+        <Route
+          path="/instructor/assignments/:assignmentId"
+          element={<RoleRoute role="teacher"><TeacherAssignmentPage /></RoleRoute>}
+        />
+
+        {/* Teacher: risk analytics dashboard */}
+        <Route
+          path="/instructor/risk"
+          element={<RoleRoute role="teacher"><RiskDashboard /></RoleRoute>}
+        />
+
+        {/* Student: submit answer to an assignment */}
+        <Route
+          path="/courses/:courseId/assignments/:assignmentId"
+          element={<RoleRoute role="student"><StudentAssignmentPage /></RoleRoute>}
+        />
 
         {/* Full-screen lesson view (has its own header) */}
         <Route

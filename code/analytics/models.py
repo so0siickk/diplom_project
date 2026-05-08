@@ -89,3 +89,29 @@ class QuizAttempt(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user.username} → {self.lesson.title}: {self.score:.2f}'
+
+
+class StudentRiskScore(models.Model):
+    """
+    Pre-computed heuristic risk score per student.
+    Used as a fallback when the ML model (model.pkl) is not available.
+    Populated by: python manage.py calculate_risks
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='risk_score_cache',
+    )
+    risk_score = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        verbose_name='Риск отчисления (0–1)',
+    )
+    computed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Кэшированный риск'
+        verbose_name_plural = 'Кэшированные риски'
+
+    def __str__(self) -> str:
+        return f'{self.user.username}: {self.risk_score:.3f}'

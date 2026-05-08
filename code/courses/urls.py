@@ -4,6 +4,7 @@ from .views import (
     CourseListTemplateView, CourseDetailTemplateView,
     LessonDetailTemplateView, CourseCreateView,
     CourseViewSet, ModuleViewSet, LessonViewSet,
+    lesson_materials, lesson_quiz, submit_quiz,
 )
 
 router = DefaultRouter()
@@ -17,6 +18,11 @@ urlpatterns = [
     # GET/PUT/PATCH/DELETE /api/v1/courses/<pk>/
     # (same pattern for /modules/ and /lessons/)
     path('api/v1/', include(router.urls)),
+
+    # Quiz & materials
+    path('api/v1/lessons/<int:lesson_id>/materials/', lesson_materials, name='lesson-materials'),
+    path('api/v1/lessons/<int:lesson_id>/quiz/',      lesson_quiz,      name='lesson-quiz'),
+    path('api/v1/quizzes/<int:quiz_id>/submit/',      submit_quiz,      name='quiz-submit'),
 
     # HTML template pages
     path('',                  CourseListTemplateView.as_view(),   name='course-list-html'),

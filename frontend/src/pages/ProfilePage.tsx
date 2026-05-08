@@ -6,8 +6,10 @@
  */
 
 import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { BookCheck, Star, LibraryBig, TrendingUp } from 'lucide-react'
 import client from '../api/client'
+import { useAuthStore } from '../store/authStore'
 
 interface ProfileData {
   username: string
@@ -64,6 +66,8 @@ const ACHIEVEMENTS = [
 // ---------------------------------------------------------------------------
 
 export default function ProfilePage() {
+  const role = useAuthStore((s) => s.role)
+
   const [data, setData] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -76,6 +80,8 @@ export default function ProfilePage() {
   const completionRate = data && data.lessons_started > 0
     ? Math.round((data.lessons_completed / data.lessons_started) * 100)
     : 0
+
+  if (role === 'teacher') return <Navigate to="/instructor" replace />
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">

@@ -9,9 +9,11 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { BookOpen, Layers, Loader2, Plus, Sparkles } from 'lucide-react'
+import { Link, Navigate } from 'react-router-dom'
+import { BookOpen, Layers, Loader2, Plus, Sparkles, X } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import client from '../api/client'
+import { useAuthStore } from '../store/authStore'
 import type { Course, RecommendationItem, RecommendationsResponse } from '../api/types'
 
 // ---------------------------------------------------------------------------
@@ -168,6 +170,8 @@ function NoEnrollmentsPrompt() {
 // ---------------------------------------------------------------------------
 
 export default function Dashboard() {
+  const role = useAuthStore((s) => s.role)
+
   const [courses, setCourses] = useState<Course[]>([])
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [coursesError, setCoursesError] = useState<string | null>(null)
@@ -182,6 +186,7 @@ export default function Dashboard() {
 
   // Per-course enrolling state (keyed by course id)
   const [enrollingId, setEnrollingId] = useState<number | null>(null)
+  const [enrollError, setEnrollError] = useState<string | null>(null)
 
   // Derived splits
   const enrolledCourses = courses.filter((c) => c.is_enrolled)
@@ -234,6 +239,7 @@ export default function Dashboard() {
   // ---- Enroll from catalog ----
   const handleEnroll = async (courseId: number) => {
     setEnrollingId(courseId)
+    setEnrollError(null)
     try {
       await client.post(`/api/v1/courses/${courseId}/enroll/`)
       // Move course to "My Learning" locally — no page reload
@@ -242,14 +248,23 @@ export default function Dashboard() {
       )
       // Auto-select the newly enrolled course
       setSelectedCourseId(courseId)
-    } catch {
-      // Silently ignore — user can retry
+    } catch (err) {
+      const status = isAxiosError(err) ? err.response?.status : undefined
+      if (status === 403) {
+        setEnrollError('Нет прав доступа. Убедитесь, что вы авторизованы, и попробуйте снова.')
+      } else if (status === 401) {
+        setEnrollError('Сессия истекла. Войдите в систему заново.')
+      } else {
+        setEnrollError('Не удалось записаться на курс. Попробуйте позже.')
+      }
     } finally {
       setEnrollingId(null)
     }
   }
 
   const selectedCourse = enrolledCourses.find((c) => c.id === selectedCourseId) ?? null
+
+  if (role === 'teacher') return <Navigate to="/instructor" replace />
 
   return (
     <div className="flex flex-col">
@@ -359,6 +374,19 @@ export default function Dashboard() {
         ============================================================ */}
         {!coursesLoading && catalogCourses.length > 0 && (
           <section>
+            {enrollError && (
+              <div className="flex items-center justify-between gap-3 rounded-lg
+                              bg-red-50 border border-red-200 px-4 py-3 mb-4">
+                <p className="text-sm text-red-700">{enrollError}</p>
+                <button
+                  onClick={() => setEnrollError(null)}
+                  className="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors"
+                  aria-label="Закрыть"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
             <div className="flex items-center gap-2 mb-4">
               <Layers size={16} className="text-gray-400" />
               <h2 className="text-base font-semibold text-gray-800">Каталог курсов</h2>

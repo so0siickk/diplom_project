@@ -203,7 +203,13 @@ def predict_completion_prob(user: 'User', lesson: 'Lesson') -> float:
     """
     model = get_model()
     if model is None:
-        return 0.5
+        # Fallback: use pre-computed heuristic risk stored by calculate_risks command
+        try:
+            from analytics.models import StudentRiskScore
+            cached = StudentRiskScore.objects.only('risk_score').get(user=user)
+            return round(1.0 - cached.risk_score, 4)
+        except Exception:
+            return 0.5
 
     X = build_feature_vector(user, lesson)
     prob: float = model.predict_proba(X)[0, 1]
@@ -251,13 +257,28 @@ def get_recommendations(
 
     model = get_model()
 
+    # When model is absent, fetch cached heuristic risk once per user (not per lesson)
+    cached_prob: float = 0.5
+    if model is None:
+        try:
+            from analytics.models import StudentRiskScore
+            cached_risk = (
+                StudentRiskScore.objects
+                .only('risk_score')
+                .get(user=user)
+                .risk_score
+            )
+            cached_prob = round(1.0 - cached_risk, 4)
+        except Exception:
+            cached_prob = 0.5
+
     results = []
     for lesson in pending_lessons:
         if model is not None:
             X = build_feature_vector(user, lesson)
             prob = round(float(model.predict_proba(X)[0, 1]), 4)
         else:
-            prob = 0.5
+            prob = cached_prob
 
         results.append({
             'lesson_id': lesson.id,

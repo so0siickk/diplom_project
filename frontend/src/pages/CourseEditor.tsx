@@ -31,6 +31,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import { isAxiosError } from 'axios'
 import client from '../api/client'
 import type { Course as ApiCourse } from '../api/types'
 
@@ -267,7 +268,7 @@ function ModulePanel({
 // ---------------------------------------------------------------------------
 
 function LessonPanel({
-  lesson, moduleUnsaved, tab, onTabChange, onUpdate, saveStatus, onSave,
+  lesson, moduleUnsaved, tab, onTabChange, onUpdate, saveStatus, onSave, fieldErrors,
 }: {
   lesson: DraftLesson
   moduleUnsaved: boolean
@@ -276,7 +277,12 @@ function LessonPanel({
   onUpdate: (p: Partial<Pick<DraftLesson, 'title' | 'content' | 'video_url' | 'order'>>) => void
   saveStatus: SaveStatus
   onSave: () => void
+  fieldErrors: Record<string, string>
 }) {
+  const hasError = (field: string) => !!fieldErrors[field]
+  const errCls = (field: string) =>
+    hasError(field) ? 'border-red-400 focus:ring-red-200' : ''
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
@@ -300,13 +306,18 @@ function LessonPanel({
               value={lesson.title}
               onChange={(e) => onUpdate({ title: e.target.value })}
               placeholder="Заголовок урока"
-              className={inputCls}
+              className={`${inputCls} ${errCls('title')}`}
             />
           </Field>
+          {hasError('title') && (
+            <p className="text-red-500 text-sm mt-1">{fieldErrors.title}</p>
+          )}
         </div>
 
         {/* Markdown editor with preview */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className={`bg-white rounded-xl border overflow-hidden ${
+          hasError('content') ? 'border-red-400' : 'border-gray-200'
+        }`}>
           {/* Tab bar */}
           <div className="flex items-center gap-1 px-4 py-2 border-b border-gray-100 bg-gray-50">
             {(['edit', 'preview'] as const).map((t) => (
@@ -349,6 +360,9 @@ function LessonPanel({
               </div>
             )}
           </div>
+          {hasError('content') && (
+            <p className="text-red-500 text-sm px-5 pb-4">{fieldErrors.content}</p>
+          )}
         </div>
 
         {/* Video URL */}
@@ -358,9 +372,12 @@ function LessonPanel({
               value={lesson.video_url}
               onChange={(e) => onUpdate({ video_url: e.target.value })}
               placeholder="https://youtube.com/watch?v=..."
-              className={inputCls}
+              className={`${inputCls} ${errCls('video_url')}`}
             />
           </Field>
+          {hasError('video_url') && (
+            <p className="text-red-500 text-sm mt-1">{fieldErrors.video_url}</p>
+          )}
         </div>
 
         {moduleUnsaved && (
@@ -572,11 +589,13 @@ export default function CourseEditor() {
   const [selection, setSelection] = useState<Selection>({ type: 'course' })
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [lessonTab, setLessonTab] = useState<'edit' | 'preview'>('edit')
+  const [lessonFieldErrors, setLessonFieldErrors] = useState<Record<string, string>>({})
 
-  // Reset save status on selection change
+  // Reset save status and field errors on selection change
   const select = (s: Selection) => {
     setSelection(s)
     setSaveStatus('idle')
+    setLessonFieldErrors({})
   }
 
   // ---- Load existing course ----
@@ -605,7 +624,16 @@ export default function CourseEditor() {
     mi: number,
     li: number,
     patch: Partial<Pick<DraftLesson, 'title' | 'content' | 'video_url' | 'order'>>,
-  ) =>
+  ) => {
+    // Clear server errors for the fields being edited
+    const changedFields = Object.keys(patch)
+    if (changedFields.some((f) => f in lessonFieldErrors)) {
+      setLessonFieldErrors((prev) => {
+        const next = { ...prev }
+        changedFields.forEach((f) => delete next[f])
+        return next
+      })
+    }
     setDraft((p) => {
       const modules = [...p.modules]
       const lessons = [...modules[mi].lessons]
@@ -613,6 +641,7 @@ export default function CourseEditor() {
       modules[mi] = { ...modules[mi], lessons }
       return { ...p, modules }
     })
+  }
 
   // ---- Save wrapper ----
   const withStatus = async (fn: () => Promise<void>) => {
@@ -658,8 +687,9 @@ export default function CourseEditor() {
     })
 
   // ---- Save lesson ----
-  const saveLesson = (mi: number, li: number) =>
-    withStatus(async () => {
+  const saveLesson = (mi: number, li: number) => {
+    setLessonFieldErrors({})
+    return withStatus(async () => {
       const l = draft.modules[mi].lessons[li]
       const moduleId = draft.modules[mi].id
       if (!moduleId) throw new Error('Save module first')
@@ -670,19 +700,32 @@ export default function CourseEditor() {
         video_url: l.video_url || null,
         order: l.order,
       }
-      if (l.id === null) {
-        const { data } = await client.post<{ id: number }>('/api/v1/lessons/', payload)
-        setDraft((p) => {
-          const modules = [...p.modules]
-          const lessons = [...modules[mi].lessons]
-          lessons[li] = { ...lessons[li], id: data.id }
-          modules[mi] = { ...modules[mi], lessons }
-          return { ...p, modules }
-        })
-      } else {
-        await client.patch(`/api/v1/lessons/${l.id}/`, payload)
+      try {
+        if (l.id === null) {
+          const { data } = await client.post<{ id: number }>('/api/v1/lessons/', payload)
+          setDraft((p) => {
+            const modules = [...p.modules]
+            const lessons = [...modules[mi].lessons]
+            lessons[li] = { ...lessons[li], id: data.id }
+            modules[mi] = { ...modules[mi], lessons }
+            return { ...p, modules }
+          })
+        } else {
+          await client.patch(`/api/v1/lessons/${l.id}/`, payload)
+        }
+      } catch (err) {
+        if (isAxiosError(err) && err.response?.data && typeof err.response.data === 'object') {
+          const raw = err.response.data as Record<string, string | string[]>
+          const errors: Record<string, string> = {}
+          for (const [field, msgs] of Object.entries(raw)) {
+            errors[field] = Array.isArray(msgs) ? msgs[0] : String(msgs)
+          }
+          setLessonFieldErrors(errors)
+        }
+        throw err
       }
     })
+  }
 
   // ---- Delete module ----
   const deleteModule = async (mi: number) => {
@@ -798,6 +841,7 @@ export default function CourseEditor() {
               onUpdate={(patch) => updLesson(mi, li, patch)}
               saveStatus={saveStatus}
               onSave={() => saveLesson(mi, li)}
+              fieldErrors={lessonFieldErrors}
             />
           )
         })()}
